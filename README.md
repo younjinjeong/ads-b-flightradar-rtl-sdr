@@ -4,9 +4,10 @@ A real-time ADS-B (Automatic Dependent Surveillance-Broadcast) flight tracking s
 
 <!-- RTL-SDR Device Image -->
 <p align="center">
-  <img src="docs/images/rtl-sdr-r820t2.jpg" alt="RTL-SDR R820T2 USB Tuner" width="250">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/DVB-T_USB_dongle_with_RTL2832U_and_R820T_%28cropped%29.jpg/440px-DVB-T_USB_dongle_with_RTL2832U_and_R820T_%28cropped%29.jpg" alt="RTL-SDR R820T2 USB Tuner" width="300">
   <br>
-  <em>RTL-SDR R820T2 USB Tuner (100KHz - 1.7GHz)</em>
+  <em>RTL-SDR USB Dongle with RTL2832U + R820T/R820T2 Tuner<br>
+  <small>Image: Wikimedia Commons (CC BY-SA 3.0)</small></em>
 </p>
 
 ## Table of Contents
@@ -144,7 +145,7 @@ This project was developed and tested with:
 - ADC Resolution: 8-bit
 - Interface: USB 2.0
 
-![RTL-SDR R820T2](docs/images/rtl-sdr-r820t2.jpg)
+*See device image at top of page*
 
 ### Recommended Setup
 
