@@ -1,0 +1,49 @@
+services:
+  # TimescaleDB for time-series storage
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: adsb-timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=adsb
+      - POSTGRES_PASSWORD=adsb
+      - POSTGRES_DB=adsb
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./services/timescaledb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adsb -d adsb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # gRPC Gateway - receives streams from host rust-dsp, serves WebSocket/REST
+  grpc-gateway:
+    build:
+      context: .
+      dockerfile: services/grpc-gateway/Dockerfile
+    container_name: adsb-grpc-gateway
+    ports:
+      - "50051:50051"  # gRPC (for host rust-dsp to connect)
+      - "8888:8888"    # HTTP/WebSocket (for browser)
+    environment:
+      - GRPC_PORT=50051
+      - WS_PORT=8888
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - DB_NAME=adsb
+      - DB_USER=adsb
+      - DB_PASSWORD=adsb
+      - STATIC_DIR=/app/static
+      - RUST_LOG=info
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+  # NOTE: rust-dsp now runs natively on Windows host, not in container
+  # Start it with: cd services/rust-dsp && cargo run --release
+  # Environment: GATEWAY_URL=http://localhost:50051 TCP_PORT=50052
+
+volumes:
+  timescaledb_data:

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adsb-config
+  namespace: adsb-tracker
+data:
+  # Database settings
+  DB_HOST: "timescaledb"
+  DB_PORT: "5432"
+  DB_NAME: "adsb"
+  DB_USER: "adsb"
+
+  # grpc-gateway settings (receives streams from Windows host)
+  GRPC_PORT: "50051"
+  WS_PORT: "8888"
+
+  # NOTE: rust-dsp runs natively on Windows host, not in Kubernetes
+  # Configure rust-dsp with:
+  #   GATEWAY_URL=http://localhost:30051  (NodePort for grpc-gateway)
+  #   TCP_PORT=50052  (receives from sdr-capture)

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-gateway
+  namespace: adsb-tracker
+  labels:
+    app: grpc-gateway
+spec:
+  selector:
+    app: grpc-gateway
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      nodePort: 30051
+    - name: http
+      port: 8888
+      targetPort: 8888
+      nodePort: 30888
+  type: NodePort

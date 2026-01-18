@@ -1,0 +1,630 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    overflow: hidden;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #16213e;
+    border-bottom: 1px solid #0f3460;
+    z-index: 1000;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    color: #e94560;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.status-indicator.connected {
+    background: #4ade80;
+    box-shadow: 0 0 10px #4ade80;
+}
+
+.status-indicator.disconnected {
+    background: #f87171;
+}
+
+.status-indicator.connecting {
+    background: #fbbf24;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.divider {
+    color: #4a5568;
+}
+
+/* Main container */
+.main-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+}
+
+/* Map */
+#map {
+    flex: 1;
+    z-index: 1;
+}
+
+/* Leaflet custom styles */
+.leaflet-container {
+    background: #1a1a2e;
+}
+
+.aircraft-icon {
+    transition: transform 0.5s ease-out;
+}
+
+.aircraft-marker {
+    background: none;
+    border: none;
+}
+
+.aircraft-marker svg {
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+}
+
+.aircraft-label {
+    background: rgba(22, 33, 62, 0.9);
+    border: 1px solid #0f3460;
+    border-radius: 3px;
+    padding: 2px 5px;
+    font-size: 11px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* Info panel */
+.info-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 300px;
+    background: rgba(22, 33, 62, 0.95);
+    border: 1px solid #0f3460;
+    border-radius: 8px;
+    z-index: 1000;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.info-panel.hidden {
+    transform: translateX(320px);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #0f3460;
+}
+
+.panel-header h2 {
+    font-size: 1.2rem;
+    color: #e94560;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.panel-content {
+    padding: 15px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #0f3460;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row label {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.info-row span {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #0f3460;
+}
+
+.btn {
+    flex: 1;
+    padding: 8px 15px;
+    background: #e94560;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #ff6b6b;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Aircraft list panel */
+.list-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 280px;
+    background: rgba(22, 33, 62, 0.95);
+    border-top: 1px solid #0f3460;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.list-panel.collapsed {
+    transform: translateY(240px);
+}
+
+.list-panel .panel-header {
+    padding: 8px 15px;
+}
+
+.list-panel .panel-header h3 {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.3s;
+}
+
+.list-panel.collapsed .toggle-btn {
+    transform: rotate(180deg);
+}
+
+.aircraft-list {
+    max-height: 230px;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0 10px 10px;
+}
+
+/* Aircraft table styles */
+.aircraft-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.aircraft-table thead {
+    position: sticky;
+    top: 0;
+    background: #0f3460;
+    z-index: 1;
+}
+
+.aircraft-table th {
+    padding: 8px 6px;
+    text-align: left;
+    color: #888;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 1px solid #1a4a7a;
+}
+
+.aircraft-table td {
+    padding: 6px;
+    border-bottom: 1px solid #0f3460;
+    white-space: nowrap;
+}
+
+.aircraft-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.aircraft-table tbody tr:hover {
+    background: #1a4a7a;
+}
+
+.aircraft-table tbody tr.selected {
+    background: #e94560;
+}
+
+.aircraft-table tbody tr.no-position {
+    opacity: 0.6;
+}
+
+.aircraft-table .icao-cell {
+    font-family: monospace;
+    color: #4ade80;
+    font-weight: 600;
+}
+
+.aircraft-table .callsign-cell {
+    color: #fff;
+    font-weight: 600;
+}
+
+.aircraft-table .position-cell {
+    font-family: monospace;
+    color: #888;
+    font-size: 0.75rem;
+}
+
+.aircraft-table .altitude-cell {
+    color: #fbbf24;
+    text-align: right;
+}
+
+.aircraft-table .vrate-cell {
+    text-align: right;
+    font-size: 0.75rem;
+}
+
+.aircraft-table .vrate-cell.climbing {
+    color: #4ade80;
+}
+
+.aircraft-table .vrate-cell.descending {
+    color: #f87171;
+}
+
+.aircraft-table .speed-cell {
+    color: #60a5fa;
+    text-align: right;
+}
+
+.aircraft-table .heading-cell {
+    text-align: right;
+}
+
+.aircraft-table .squawk-cell {
+    font-family: monospace;
+    color: #c084fc;
+}
+
+.aircraft-table .device-cell {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+/* Trail styles */
+.aircraft-trail {
+    stroke: #e94560;
+    stroke-width: 2;
+    fill: none;
+    opacity: 0.7;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #16213e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0f3460;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #1a4a7a;
+}
+
+/* SDR Status Panel */
+.sdr-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 300px;
+    background: rgba(22, 33, 62, 0.95);
+    border: 1px solid #0f3460;
+    border-radius: 8px;
+    z-index: 1000;
+    overflow: hidden;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+    max-height: 600px;
+}
+
+.sdr-panel.collapsed {
+    max-height: 40px;
+}
+
+.sdr-panel.collapsed .sdr-content {
+    display: none;
+}
+
+.sdr-panel .panel-header {
+    padding: 10px 15px;
+}
+
+.sdr-panel .panel-header h3 {
+    font-size: 0.9rem;
+    color: #4ade80;
+}
+
+.sdr-panel.collapsed .toggle-btn {
+    transform: rotate(180deg);
+}
+
+.sdr-content {
+    padding: 10px 15px;
+}
+
+/* SDR Panel Sections */
+.sdr-section {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #0f3460;
+}
+
+.sdr-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.sdr-section-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.sdr-status-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 0.85rem;
+}
+
+.sdr-label {
+    color: #888;
+}
+
+.sdr-value {
+    font-weight: 500;
+    color: #fff;
+}
+
+.sdr-value.status-connected,
+.sdr-value.status-active {
+    color: #4ade80;
+}
+
+.sdr-value.status-stale {
+    color: #fbbf24;
+}
+
+.sdr-value.status-disconnected {
+    color: #f87171;
+}
+
+/* Signal display */
+.signal-display {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #0f3460;
+}
+
+.signal-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.signal-bar-container {
+    position: relative;
+    height: 20px;
+    background: #1a1a2e;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.signal-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f87171, #fbbf24, #4ade80);
+    transition: width 0.3s ease;
+}
+
+.noise-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: rgba(248, 113, 113, 0.3);
+    border-right: 2px solid #f87171;
+    transition: width 0.3s ease;
+}
+
+.signal-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Signal chart */
+.signal-chart-container {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #0f3460;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.update-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.1s;
+}
+
+.update-indicator.active {
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
+}
+
+#signal-chart {
+    width: 100%;
+    height: 100px;
+    background: #1a1a2e;
+    border-radius: 4px;
+}
+
+/* Real-time signal meter */
+.realtime-meter {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #0f3460;
+}
+
+.meter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.meter-header span:last-child {
+    color: #4ade80;
+    font-family: monospace;
+}
+
+.meter-display {
+    background: #0a0a15;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#signal-meter {
+    width: 100%;
+    height: 40px;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .info-panel {
+        width: 100%;
+        right: 0;
+        top: auto;
+        bottom: 200px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .info-panel.hidden {
+        transform: translateY(100%);
+    }
+
+    .list-panel {
+        max-height: 220px;
+    }
+
+    .sdr-panel {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+    }
+
+    .aircraft-table {
+        font-size: 0.7rem;
+    }
+
+    .aircraft-table th,
+    .aircraft-table td {
+        padding: 4px 3px;
+    }
+}

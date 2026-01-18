@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-gateway
+  namespace: adsb-tracker
+  labels:
+    app: grpc-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-gateway
+  template:
+    metadata:
+      labels:
+        app: grpc-gateway
+    spec:
+      containers:
+        - name: grpc-gateway
+          image: adsb-grpc-gateway:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 50051
+              name: grpc
+            - containerPort: 8888
+              name: http
+          env:
+            - name: GRPC_PORT
+              value: "50051"
+            - name: WS_PORT
+              value: "8888"
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: adsb-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: adsb-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: adsb-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: adsb-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: adsb-secrets
+                  key: DB_PASSWORD
+            - name: STATIC_DIR
+              value: "/app/static"
+            - name: RUST_LOG
+              value: "info"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -1,0 +1,234 @@
+syntax = "proto3";
+
+package adsb;
+
+// Service for streaming raw IQ samples from RTL-SDR to DSP processor
+service IQStream {
+    // Stream raw IQ samples from SDR capture to DSP processor
+    rpc StreamIQ(stream IQSamples) returns (StreamAck);
+}
+
+// Service for receiving decoded ADS-B messages
+service ADSBReceiver {
+    // Stream decoded ADS-B data to database writer
+    rpc StreamADSB(stream ADSBMessage) returns (StreamAck);
+
+    // Subscribe to real-time ADS-B updates (for WebSocket gateway)
+    rpc SubscribeADSB(SubscribeRequest) returns (stream ADSBMessage);
+}
+
+// Raw IQ samples from RTL-SDR
+message IQSamples {
+    // Timestamp in microseconds since epoch
+    uint64 timestamp_us = 1;
+
+    // Interleaved I/Q samples (8-bit unsigned)
+    // Format: [I0, Q0, I1, Q1, I2, Q2, ...]
+    bytes samples = 2;
+
+    // Sample rate in Hz (typically 2.4 MHz for ADS-B)
+    uint32 sample_rate = 3;
+
+    // Center frequency in Hz (1090 MHz for ADS-B)
+    uint64 center_frequency = 4;
+}
+
+// Decoded ADS-B message
+message ADSBMessage {
+    // Timestamp when message was received
+    uint64 timestamp_us = 1;
+
+    // ICAO 24-bit aircraft address (hex string, e.g., "A1B2C3")
+    string icao_address = 2;
+
+    // Downlink Format (DF) type
+    uint32 downlink_format = 3;
+
+    // Message type
+    MessageType message_type = 4;
+
+    // Aircraft callsign (flight number), if available
+    string callsign = 5;
+
+    // Position data
+    Position position = 6;
+
+    // Velocity data
+    Velocity velocity = 7;
+
+    // Altitude in feet
+    int32 altitude_ft = 8;
+
+    // Squawk code (4-digit octal)
+    string squawk = 9;
+
+    // Aircraft category (e.g., "A1" for light aircraft)
+    string category = 10;
+
+    // Signal strength in dB
+    float signal_strength_db = 11;
+
+    // Raw message bytes (for debugging)
+    bytes raw_message = 12;
+}
+
+// Aircraft position
+message Position {
+    // Latitude in degrees (-90 to 90)
+    double latitude = 1;
+
+    // Longitude in degrees (-180 to 180)
+    double longitude = 2;
+
+    // Position is valid
+    bool valid = 3;
+
+    // NIC (Navigation Integrity Category)
+    uint32 nic = 4;
+}
+
+// Aircraft velocity
+message Velocity {
+    // Ground speed in knots
+    float ground_speed_kts = 1;
+
+    // True heading in degrees (0-360)
+    float heading_deg = 2;
+
+    // Vertical rate in feet per minute (positive = climbing)
+    int32 vertical_rate_fpm = 3;
+
+    // Velocity data is valid
+    bool valid = 4;
+
+    // Velocity type
+    VelocityType velocity_type = 5;
+}
+
+// Message types
+enum MessageType {
+    MESSAGE_TYPE_UNKNOWN = 0;
+    MESSAGE_TYPE_IDENTIFICATION = 1;      // Aircraft identification (callsign)
+    MESSAGE_TYPE_SURFACE_POSITION = 2;    // Surface position
+    MESSAGE_TYPE_AIRBORNE_POSITION = 3;   // Airborne position
+    MESSAGE_TYPE_AIRBORNE_VELOCITY = 4;   // Airborne velocity
+    MESSAGE_TYPE_SURVEILLANCE_ALT = 5;    // Surveillance altitude
+    MESSAGE_TYPE_SURVEILLANCE_ID = 6;     // Surveillance identity
+    MESSAGE_TYPE_ALL_CALL_REPLY = 7;      // All-call reply
+}
+
+// Velocity types
+enum VelocityType {
+    VELOCITY_TYPE_UNKNOWN = 0;
+    VELOCITY_TYPE_GROUND_SPEED = 1;       // Ground speed + heading
+    VELOCITY_TYPE_AIRSPEED = 2;           // Indicated/true airspeed
+}
+
+// Acknowledgment for streaming
+message StreamAck {
+    bool success = 1;
+    string message = 2;
+    uint64 messages_received = 3;
+}
+
+// Subscribe request for real-time updates
+message SubscribeRequest {
+    // Optional: filter by ICAO addresses
+    repeated string icao_filter = 1;
+
+    // Optional: geographic bounding box filter
+    BoundingBox bounding_box = 2;
+
+    // Include raw message bytes
+    bool include_raw = 3;
+}
+
+// Geographic bounding box for filtering
+message BoundingBox {
+    double min_latitude = 1;
+    double max_latitude = 2;
+    double min_longitude = 3;
+    double max_longitude = 4;
+}
+
+// Aircraft state (aggregated from multiple messages)
+message AircraftState {
+    string icao_address = 1;
+    string callsign = 2;
+    Position position = 3;
+    Velocity velocity = 4;
+    int32 altitude_ft = 5;
+    string squawk = 6;
+    string category = 7;
+    uint64 last_seen_us = 8;
+    uint32 message_count = 9;
+}
+
+// Signal metrics (ephemeral - not stored in database)
+message SignalMetrics {
+    string device_id = 1;
+    uint64 timestamp_ms = 2;
+    float signal_dbfs = 3;
+    float noise_dbfs = 4;
+    float snr_db = 5;
+    float msg_rate = 6;  // messages per second
+    // Decoder statistics
+    uint64 preambles_detected = 7;   // Total preambles found
+    uint64 frames_decoded = 8;       // Valid frames decoded
+    uint64 crc_errors = 9;           // CRC verification failures
+    uint64 corrected_frames = 10;    // Frames recovered via error correction
+    uint64 samples_processed = 11;   // Total IQ samples processed
+    uint32 noise_floor = 12;         // Raw noise floor magnitude value
+    uint32 peak_signal = 13;         // Peak signal magnitude seen
+}
+
+// Device status
+message DeviceStatus {
+    string device_id = 1;
+    bool connected = 2;
+    uint32 sample_rate = 3;
+    uint64 center_freq = 4;
+    float gain_db = 5;
+    uint64 timestamp_ms = 6;
+}
+
+// Aircraft event from host (for streaming to gateway)
+message AircraftEvent {
+    string device_id = 1;
+    uint64 timestamp_ms = 2;
+    string icao = 3;
+    string callsign = 4;
+    int32 altitude_ft = 5;
+    double latitude = 6;
+    double longitude = 7;
+    float speed_kts = 8;
+    float heading_deg = 9;
+    int32 vertical_rate_fpm = 10;
+    string squawk = 11;
+    uint32 downlink_format = 12;
+    uint32 type_code = 13;
+}
+
+// Gateway service - receives streams from host applications
+service AdsbGateway {
+    // Host streams aircraft events to gateway (persisted to DB + broadcast)
+    rpc StreamAircraft(stream AircraftEvent) returns (StreamAck);
+
+    // Host streams signal metrics to gateway (broadcast only - ephemeral)
+    rpc StreamSignal(stream SignalMetrics) returns (StreamAck);
+
+    // Host streams device status to gateway (persisted to DB + broadcast)
+    rpc StreamDeviceStatus(stream DeviceStatus) returns (StreamAck);
+}
+
+// Service for signal metrics streaming (ephemeral data)
+service SignalStream {
+    // Subscribe to real-time signal metrics (not persisted)
+    rpc SubscribeSignal(SignalSubscribeRequest) returns (stream SignalMetrics);
+}
+
+// Request to subscribe to signal metrics
+message SignalSubscribeRequest {
+    // Optional: filter by device ID
+    string device_id = 1;
+}

@@ -1,0 +1,169 @@
+# =============================================================================
+# ADS-B Flight Tracker - Git Ignore File
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Rust Build Artifacts
+# -----------------------------------------------------------------------------
+**/target/
+**/*.rs.bk
+Cargo.lock
+
+# Debug files
+**/*.pdb
+
+# -----------------------------------------------------------------------------
+# IDE and Editor Files
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# -----------------------------------------------------------------------------
+# Claude Code AI Assistant Files
+# IMPORTANT: These contain local paths and session-specific data
+# -----------------------------------------------------------------------------
+.claude/
+.claude/**
+*.claude.md
+
+# Claude memory and plan files (external to project)
+# These are stored in user home directory but listed for completeness
+
+# -----------------------------------------------------------------------------
+# Environment and Secrets
+# NEVER commit credentials or secrets
+# -----------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.env
+secrets.yaml
+secrets.json
+credentials.json
+*.key
+*.pem
+*.crt
+
+# -----------------------------------------------------------------------------
+# Node.js (if frontend uses npm)
+# -----------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -----------------------------------------------------------------------------
+# Python (if any scripts)
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+.venv/
+
+# -----------------------------------------------------------------------------
+# Docker
+# -----------------------------------------------------------------------------
+# Docker build contexts may be large
+.docker/
+
+# -----------------------------------------------------------------------------
+# Windows Specific
+# -----------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
+
+# -----------------------------------------------------------------------------
+# macOS Specific
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# -----------------------------------------------------------------------------
+# Linux Specific
+# -----------------------------------------------------------------------------
+*~
+
+# -----------------------------------------------------------------------------
+# Log Files
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.out
+*.err
+
+# Build output files (when redirected to files)
+build_out.txt
+build_err.txt
+adsb_out.txt
+adsb_err.txt
+
+# -----------------------------------------------------------------------------
+# Temporary Files
+# -----------------------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+tmp/
+temp/
+
+# -----------------------------------------------------------------------------
+# Generated Files (keep protobuf but ignore generated Rust code)
+# -----------------------------------------------------------------------------
+# Note: Keep proto/*.proto files but generated code is in target/
+
+# -----------------------------------------------------------------------------
+# Test Coverage and Reports
+# -----------------------------------------------------------------------------
+coverage/
+*.gcno
+*.gcda
+*.gcov
+tarpaulin-report.html
+
+# -----------------------------------------------------------------------------
+# Kubernetes Secrets (sensitive - don't commit real secrets)
+# Note: k8s/secret.yaml is included but contains only dev defaults
+# In production, use proper secret management (Vault, AWS Secrets, etc.)
+# -----------------------------------------------------------------------------
+# k8s/*-secret.yaml  # Uncomment if you add production secrets
+
+# -----------------------------------------------------------------------------
+# Database Files (if SQLite is used locally)
+# -----------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# -----------------------------------------------------------------------------
+# Binary Files (except required DLLs/libs)
+# Note: services/adsb-capture/lib/ contains required RTL-SDR binaries
+# that should be committed (rtl_sdr.exe, rtl_adsb.exe, librtlsdr.dll, etc.)
+# -----------------------------------------------------------------------------
+# Keep: services/adsb-capture/lib/*.exe
+# Keep: services/adsb-capture/lib/*.dll
+
+# -----------------------------------------------------------------------------
+# Archive Files
+# -----------------------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z

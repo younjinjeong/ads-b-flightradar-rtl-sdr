@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADS-B Flight Tracker</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>ADS-B Flight Tracker</h1>
+            <div class="status">
+                <span id="connection-status" class="status-indicator disconnected"></span>
+                <span id="status-text">Disconnected</span>
+                <span class="divider">|</span>
+                <span id="aircraft-count">0 aircraft</span>
+                <span class="divider">|</span>
+                <span id="sdr-status-indicator" class="status-indicator disconnected"></span>
+                <span id="sdr-status-text">SDR: Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <div class="main-container">
+            <!-- Map container -->
+            <div id="map"></div>
+
+            <!-- SDR Status Panel -->
+            <div id="sdr-panel" class="sdr-panel">
+                <div class="panel-header">
+                    <h3>RTL-SDR Status</h3>
+                    <button id="toggle-sdr-panel" class="toggle-btn">&#9660;</button>
+                </div>
+                <div class="sdr-content">
+                    <!-- Device Section -->
+                    <div class="sdr-section">
+                        <div class="sdr-section-header">Device</div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Status:</span>
+                            <span id="sdr-device-status" class="sdr-value status-disconnected">Disconnected</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Serial:</span>
+                            <span id="sdr-device-serial" class="sdr-value">-</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Frequency:</span>
+                            <span id="sdr-frequency" class="sdr-value">1090 MHz</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Sample Rate:</span>
+                            <span id="sdr-sample-rate" class="sdr-value">-</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Gain:</span>
+                            <span id="sdr-gain" class="sdr-value">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Signal Section -->
+                    <div class="sdr-section">
+                        <div class="sdr-section-header">Signal</div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Signal:</span>
+                            <span id="sdr-signal-dbfs" class="sdr-value">- dBFS</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Noise Floor:</span>
+                            <span id="sdr-noise-dbfs" class="sdr-value">- dBFS</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">SNR:</span>
+                            <span id="sdr-snr-db" class="sdr-value">- dB</span>
+                        </div>
+                        <div class="signal-display">
+                            <div class="signal-bar-container">
+                                <div id="signal-bar" class="signal-bar"></div>
+                                <div id="noise-bar" class="noise-bar"></div>
+                            </div>
+                            <div class="signal-labels">
+                                <span>-60</span>
+                                <span>-30</span>
+                                <span>0 dBFS</span>
+                            </div>
+                        </div>
+                        <div class="signal-chart-container">
+                            <div class="chart-header">
+                                <span>Signal History (60s)</span>
+                                <span id="signal-update-indicator" class="update-indicator"></span>
+                            </div>
+                            <canvas id="signal-chart" width="280" height="100"></canvas>
+                        </div>
+                        <!-- Real-time signal meter -->
+                        <div class="realtime-meter">
+                            <div class="meter-header">
+                                <span>1090 MHz Real-time</span>
+                                <span id="signal-rate">0 Hz</span>
+                            </div>
+                            <div class="meter-display">
+                                <canvas id="signal-meter" width="280" height="40"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decoder Section -->
+                    <div class="sdr-section">
+                        <div class="sdr-section-header">Decoder</div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Msg/sec:</span>
+                            <span id="sdr-msg-rate" class="sdr-value">0</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Preambles:</span>
+                            <span id="sdr-preambles" class="sdr-value">0</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Frames:</span>
+                            <span id="sdr-frames" class="sdr-value">0</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">CRC Errors:</span>
+                            <span id="sdr-crc-errors" class="sdr-value">0</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Corrected:</span>
+                            <span id="sdr-corrected" class="sdr-value">0</span>
+                        </div>
+                        <div class="sdr-status-row">
+                            <span class="sdr-label">Success Rate:</span>
+                            <span id="sdr-success-rate" class="sdr-value">-%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aircraft info panel -->
+            <div id="info-panel" class="info-panel hidden">
+                <div class="panel-header">
+                    <h2 id="selected-callsign">-</h2>
+                    <button id="close-panel" class="close-btn">&times;</button>
+                </div>
+                <div class="panel-content">
+                    <div class="info-row">
+                        <label>ICAO:</label>
+                        <span id="info-icao">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Callsign:</label>
+                        <span id="info-callsign">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Altitude:</label>
+                        <span id="info-altitude">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Ground Speed:</label>
+                        <span id="info-speed">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Heading:</label>
+                        <span id="info-heading">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Vertical Rate:</label>
+                        <span id="info-vrate">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Squawk:</label>
+                        <span id="info-squawk">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Position:</label>
+                        <span id="info-position">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Last Seen:</label>
+                        <span id="info-seen">-</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Messages:</label>
+                        <span id="info-messages">-</span>
+                    </div>
+                </div>
+                <div class="panel-actions">
+                    <button id="show-trail" class="btn">Show Trail</button>
+                    <button id="follow-aircraft" class="btn">Follow</button>
+                </div>
+            </div>
+
+            <!-- Aircraft list panel -->
+            <div id="list-panel" class="list-panel">
+                <div class="panel-header">
+                    <h3>Aircraft List</h3>
+                    <button id="toggle-list" class="toggle-btn">&#9660;</button>
+                </div>
+                <div id="aircraft-list" class="aircraft-list">
+                    <table class="aircraft-table">
+                        <thead>
+                            <tr>
+                                <th>ICAO</th>
+                                <th>Callsign</th>
+                                <th>Position (Lat/Lon)</th>
+                                <th>Altitude</th>
+                                <th>V/Rate</th>
+                                <th>Speed</th>
+                                <th>Heading</th>
+                                <th>Squawk</th>
+                                <th>Device</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aircraft-table-body">
+                            <!-- Aircraft rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <!-- Application JS -->
+    <script src="js/map.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/sdr-status.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

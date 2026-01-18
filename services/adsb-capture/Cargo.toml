@@ -1,0 +1,41 @@
+[package]
+name = "adsb-capture"
+version = "0.1.0"
+edition = "2021"
+description = "ADS-B capture with native RTL-SDR support - dump1090-style decoder in Rust"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full", "process"] }
+tokio-stream = "0.1"
+
+# gRPC client
+tonic = "0.10"
+prost = "0.12"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Time
+chrono = "0.4"
+
+# Hex parsing
+hex = "0.4"
+
+# Crossbeam for lock-free channels (high-performance sample passing)
+crossbeam-channel = "0.5"
+
+[build-dependencies]
+tonic-build = "0.10"
+
+[profile.release]
+opt-level = 3
+lto = true
